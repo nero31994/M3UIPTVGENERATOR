@@ -63,24 +63,21 @@
 
         async function generateCode() {
             let user = document.getElementById("username").value || "admin";
-            let expiry = document.getElementById("expiry").value || 1296000; // Default: 15 days (1,296,000 seconds)
-            let url = `${apiBase}/generate?user=${user}&expiry=${expiry}`;
+            let expiry = document.getElementById("expiry").value || 1296000; // Default: 15 days
+            let url = `${apiBase}/generate?user=${encodeURIComponent(user)}&expiry=${expiry}`;
 
             try {
                 let response = await fetch(url);
-                if (!response.ok) throw new Error("Failed to generate code");
-
                 let data = await response.json();
-                console.log("API Response:", data);
 
-                if (data.success && data.code) {
+                if (response.ok && data.success) {
                     document.getElementById("response").innerText = 
                         `✅ Generated Code: ${data.code}\n⏳ Expires in: ${data.expiresIn} seconds (${Math.floor(data.expiresIn / 86400)} days)`;
                 } else {
-                    document.getElementById("response").innerText = "⚠️ Error: No code returned!";
+                    document.getElementById("response").innerText = "⚠️ Error generating code!";
                 }
             } catch (error) {
-                document.getElementById("response").innerText = "❌ Error generating code!";
+                document.getElementById("response").innerText = "❌ Error connecting to API!";
                 console.error("Fetch error:", error);
             }
         }
@@ -89,12 +86,11 @@
             let code = document.getElementById("verifyCode").value;
             if (!code) return alert("Enter a code to verify.");
 
-            let url = `${apiBase}/verify?code=${code}`;
+            let url = `${apiBase}/verify?code=${encodeURIComponent(code)}`;
 
             try {
                 let response = await fetch(url);
                 let data = await response.json();
-                console.log("API Response:", data);
 
                 document.getElementById("response").innerText = JSON.stringify(data, null, 2);
             } catch (error) {
@@ -107,12 +103,11 @@
             let code = document.getElementById("deleteCode").value;
             if (!code) return alert("Enter a code to delete.");
 
-            let url = `${apiBase}/delete?code=${code}`;
+            let url = `${apiBase}/delete?code=${encodeURIComponent(code)}`;
 
             try {
                 let response = await fetch(url);
                 let data = await response.json();
-                console.log("API Response:", data);
 
                 document.getElementById("response").innerText = JSON.stringify(data, null, 2);
             } catch (error) {
