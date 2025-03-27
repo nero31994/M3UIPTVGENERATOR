@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background-color: #008CBA;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005f75;
+        }
+        #response {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            display: inline-block;
+            max-width: 90%;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Code Management Dashboard</h1>
+
+    <h3>Generate Code</h3>
+    <input type="text" id="username" placeholder="Enter username">
+    <input type="number" id="expiry" placeholder="Expiry (seconds)" value="1296000">
+    <button onclick="generateCode()">Generate</button>
+
+    <h3>Verify Code</h3>
+    <input type="text" id="verifyCode" placeholder="Enter code">
+    <button onclick="verifyCode()">Verify</button>
+
+    <h3>Delete Code</h3>
+    <input type="text" id="deleteCode" placeholder="Enter code">
+    <button onclick="deleteCode()">Delete</button>
+
+    <h3>Response</h3>
+    <div id="response">No action performed yet.</div>
+
+    <script>
+        const apiBase = "https://generate.arenaofvalorph937.workers.dev";
+
+        async function generateCode() {
+            let user = document.getElementById("username").value || "admin";
+            let expiry = document.getElementById("expiry").value || 1296000; // Default: 15 days (1,296,000 seconds)
+            let url = `${apiBase}/generate?user=${user}&expiry=${expiry}`;
+
+            try {
+                let response = await fetch(url);
+                if (!response.ok) throw new Error("Failed to generate code");
+
+                let data = await response.json();
+                console.log("API Response:", data);
+
+                if (data.success && data.code) {
+                    document.getElementById("response").innerText = 
+                        `✅ Generated Code: ${data.code}\n⏳ Expires in: ${data.expiresIn} seconds (${Math.floor(data.expiresIn / 86400)} days)`;
+                } else {
+                    document.getElementById("response").innerText = "⚠️ Error: No code returned!";
+                }
+            } catch (error) {
+                document.getElementById("response").innerText = "❌ Error generating code!";
+                console.error("Fetch error:", error);
+            }
+        }
+
+        async function verifyCode() {
+            let code = document.getElementById("verifyCode").value;
+            if (!code) return alert("Enter a code to verify.");
+
+            let url = `${apiBase}/verify?code=${code}`;
+
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+                console.log("API Response:", data);
+
+                document.getElementById("response").innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById("response").innerText = "❌ Error verifying code!";
+                console.error("Fetch error:", error);
+            }
+        }
+
+        async function deleteCode() {
+            let code = document.getElementById("deleteCode").value;
+            if (!code) return alert("Enter a code to delete.");
+
+            let url = `${apiBase}/delete?code=${code}`;
+
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+                console.log("API Response:", data);
+
+                document.getElementById("response").innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById("response").innerText = "❌ Error deleting code!";
+                console.error("Fetch error:", error);
+            }
+        }
+    </script>
+
+</body>
+</html>
